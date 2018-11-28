@@ -1,3 +1,7 @@
+variable "environment" {
+  description = "Environment name"
+}
+
 variable "name" {
   description = "Name of virtual machine"
 }

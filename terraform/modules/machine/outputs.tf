@@ -7,5 +7,5 @@ output "private_ip" {
 }
 
 output "ssh_user" {
-  value = "${azurerm_virtual_machine.vm.os_profile.admin_username}"
+  value = "${var.user}"
 }

@@ -31,26 +31,29 @@ resource "azurerm_subnet" "corp-subnet" {
 module "vm-01" {
   source      = "./modules/machine"
   name        = "vm-01"
-  group_name  = "${azurerm_resource_group.name}"
-  vnet_name   = "${azurerm_virtual_network.name}"
-  subnet_name = "${azurerm_subnet.name}"
+  environment = "${var.environment}"
+  group_name  = "${azurerm_resource_group.corp.name}"
+  vnet_name   = "${azurerm_virtual_network.corp-vnet.name}"
+  subnet_name = "${azurerm_subnet.corp-subnet.name}"
   public_key  = "${var.ssh_public_key}"
 }
 
 module "vm-02" {
   source      = "./modules/machine"
   name        = "vm-02"
-  group_name  = "${azurerm_resource_group.name}"
-  vnet_name   = "${azurerm_virtual_network.name}"
-  subnet_name = "${azurerm_subnet.name}"
+  environment = "${var.environment}"
+  group_name  = "${azurerm_resource_group.corp.name}"
+  vnet_name   = "${azurerm_virtual_network.corp-vnet.name}"
+  subnet_name = "${azurerm_subnet.corp-subnet.name}"
   public_key  = "${var.ssh_public_key}"
 }
 
 module "vm-03" {
   source      = "./modules/machine"
   name        = "vm-03"
-  group_name  = "${azurerm_resource_group.name}"
-  vnet_name   = "${azurerm_virtual_network.name}"
-  subnet_name = "${azurerm_subnet.name}"
+  environment = "${var.environment}"
+  group_name  = "${azurerm_resource_group.corp.name}"
+  vnet_name   = "${azurerm_virtual_network.corp-vnet.name}"
+  subnet_name = "${azurerm_subnet.corp-subnet.name}"
   public_key  = "${var.ssh_public_key}"
 }

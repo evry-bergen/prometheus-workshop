@@ -11,8 +11,8 @@ data "azurerm_subnet" "subnet" {
 # Create public IPs
 resource "azurerm_public_ip" "vm" {
   name                         = "${var.name}-public-ip"
-  location                     = "${azurerm_resource_group.group.location}"
-  resource_group_name          = "${azurerm_resource_group.group.name}"
+  location                     = "${data.azurerm_resource_group.group.location}"
+  resource_group_name          = "${data.azurerm_resource_group.group.name}"
   public_ip_address_allocation = "dynamic"
 
   tags {
@@ -23,8 +23,8 @@ resource "azurerm_public_ip" "vm" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "vm" {
   name                = "${var.name}-nsg"
-  location            = "${azurerm_resource_group.group.location}"
-  resource_group_name = "${azurerm_resource_group.group.name}"
+  location            = "${data.azurerm_resource_group.group.location}"
+  resource_group_name = "${data.azurerm_resource_group.group.name}"
 
   security_rule {
     name                       = "SSH"
@@ -46,13 +46,13 @@ resource "azurerm_network_security_group" "vm" {
 # Create network interface
 resource "azurerm_network_interface" "vm" {
   name                      = "${var.name}-nic"
-  location                  = "${azurerm_resource_group.group.location}"
-  resource_group_name       = "${azurerm_resource_group.group.name}"
+  location                  = "${data.azurerm_resource_group.group.location}"
+  resource_group_name       = "${data.azurerm_resource_group.group.name}"
   network_security_group_id = "${azurerm_network_security_group.vm.id}"
 
   ip_configuration {
     name                          = "${var.name}-nic-config"
-    subnet_id                     = "${azurerm_subnet.subnet.id}"
+    subnet_id                     = "${data.azurerm_subnet.subnet.id}"
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = "${azurerm_public_ip.vm.id}"
   }
@@ -66,7 +66,7 @@ resource "azurerm_network_interface" "vm" {
 resource "random_id" "random-id" {
   keepers = {
     # Generate a new ID only when a new resource group is defined
-    resource_group = "${azurerm_resource_group.group.name}"
+    resource_group = "${data.azurerm_resource_group.group.name}"
   }
 
   byte_length = 8
@@ -74,9 +74,9 @@ resource "random_id" "random-id" {
 
 # Create storage account for boot diagnostics
 resource "azurerm_storage_account" "vm" {
-  name                     = "${var.name}-sa-${random_id.random-id.hex}"
-  resource_group_name      = "${azurerm_resource_group.group.name}"
-  location                 = "${azurerm_resource_group.group.location}"
+  name                     = "${replace("${var.name}-sa-${random_id.random-id.hex}", "-", "")}"
+  resource_group_name      = "${data.azurerm_resource_group.group.name}"
+  location                 = "${data.azurerm_resource_group.group.location}"
   account_tier             = "${var.storage_accout_tier}"
   account_replication_type = "${var.storage_accout_replication_type}"
 
@@ -88,8 +88,8 @@ resource "azurerm_storage_account" "vm" {
 # Create virtual machine
 resource "azurerm_virtual_machine" "vm" {
   name                  = "${var.name}"
-  location              = "${azurerm_resource_group.group.location}"
-  resource_group_name   = "${azurerm_resource_group.group.name}"
+  location              = "${data.azurerm_resource_group.group.location}"
+  resource_group_name   = "${data.azurerm_resource_group.group.name}"
   network_interface_ids = ["${azurerm_network_interface.vm.id}"]
   vm_size               = "${var.vm_size}"
 
@@ -121,10 +121,10 @@ resource "azurerm_virtual_machine" "vm" {
     }
   }
 
-  boot_diagnostics {
-    enabled     = "true"
-    storage_uri = "${azurerm_storage_account.vm.primary_blob_endpoint}"
-  }
+  #boot_diagnostics {
+  #  enabled     = "true"
+  #  storage_uri = "${azurerm_storage_account.vm.primary_blob_endpoint}"
+  #}
 
   tags {
     environment = "${var.environment}"
