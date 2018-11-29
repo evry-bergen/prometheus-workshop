@@ -85,7 +85,7 @@
     src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles
     dest: /etc/prometheus/consoles
   delegate_to: "{{ inventory_hostname }}"
-  #when: not prometheus_check.stat.exists
+  when: not prometheus_check.stat.exists
   notify: prometheus restart
   tags: prometheus
 
@@ -102,7 +102,7 @@
     src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/console_libraries
     dest: /etc/prometheus/console_libraries
   delegate_to: "{{ inventory_hostname }}"
-  #when: not prometheus_check.stat.exists
+  when: not prometheus_check.stat.exists
   notify: prometheus restart
   tags: prometheus
 
