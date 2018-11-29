@@ -1,3 +1,4 @@
 ---
 node_exporter_version: 0.16.0
-node_exporter_checksum: sha256:e92a601a5ef4f77cce967266b488a978711dabc527a720bea26505cba426c029
+node_exporter_checksum: "sha256:e92a601a5ef4f77cce967266b488a978711dabc527a720b\
+                         ea26505cba426c029"

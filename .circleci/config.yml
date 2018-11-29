@@ -2,18 +2,26 @@ version: 2
 
 references:
 
-base_image: &base_image
-  hashicorp/terraform:light
-
 working_directory: &working_directory
   ~/terraform
 
-default_config: &default_config
+terraform_image: &terraform_image
+  hashicorp/terraform:light
+
+yamllint_image: &yamllint_image
+  sdesbure/yamllint:latest
+
+terraform_config: &terraform_config
   docker:
-    - image: *base_image
+    - image: *terraform_image
   working_directory: *working_directory
   environment:
     BASH_ENV: /root/.bashrc
+
+yamllint_config: &yamllint_config
+  docker:
+    - image: *yamllint_image
+  working_directory: *working_directory
 
 repo_cache_key: &repo_cache_key
   v1-repo-{{ .Branch }}-{{ .Revision }}
