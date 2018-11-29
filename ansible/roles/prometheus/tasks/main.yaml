@@ -1,0 +1,131 @@
+---
+- name: Create user for Prometheus
+  user:
+    name: prometheus
+    create_home: no
+    shell: /bin/false
+  tags: prometheus
+
+- name: Create config directory
+  file:
+    path: /etc/prometheus
+    state: directory
+    group: prometheus
+    owner: prometheus
+  tags: prometheus
+
+- name: Create data directory
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    group: prometheus
+    owner: prometheus
+  tags: prometheus
+
+- name: Check if prometheus is download
+  stat:
+    path: /tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+  register: prometheus_check
+  tags: prometheus
+
+- name: Download prometheus and verify checksum (sha256)
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    checksum: "{{ prometheus_checksum }}"
+  when: not prometheus_check.stat.exists
+  tags: prometheus
+
+- name: Unarchive prometheus binary
+  unarchive:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: yes
+  when: not prometheus_check.stat.exists
+  tags: prometheus
+
+- name: Copy prometheus to /usr/local/bin
+  copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus
+    dest: /usr/local/bin
+    group: prometheus
+    owner: prometheus
+    mode: preserve
+    remote_src: yes
+  when: not prometheus_check.stat.exists
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Copy promtool to /usr/local/bin
+  copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/promtool
+    dest: /usr/local/bin
+    group: prometheus
+    owner: prometheus
+    mode: preserve
+    remote_src: yes
+  when: not prometheus_check.stat.exists
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Copy consoles to /etc/prometheus
+  copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles
+    dest: /etc/prometheus
+    group: prometheus
+    owner: prometheus
+    mode: preserve
+    remote_src: yes
+  when: not prometheus_check.stat.exists
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Copy consoles to /etc/prometheus
+  synchronize:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles
+    dest: /etc/prometheus/consoles
+  delegate_to: "{{ inventory_hostname }}"
+  #when: not prometheus_check.stat.exists
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Set ownership on consoles
+  file:
+    path: /etc/prometheus/consoles
+    state: directory
+    group: prometheus
+    owner: prometheus
+    recurse: true
+
+- name: Copy console_libraries to /etc/prometheus
+  synchronize:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/console_libraries
+    dest: /etc/prometheus/console_libraries
+  delegate_to: "{{ inventory_hostname }}"
+  #when: not prometheus_check.stat.exists
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Set ownership on console_libraries
+  file:
+    path: /etc/prometheus/console_libraries
+    state: directory
+    group: prometheus
+    owner: prometheus
+    recurse: true
+
+- name: Copy Promethues config
+  template:
+    src: prometheus.yaml.j2
+    dest: /etc/prometheus/prometheus.yaml
+    owner: prometheus
+    group: prometheus
+  notify: prometheus restart
+  tags: prometheus
+
+- name: Copy Promethues systemd config
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify: prometheus restart
+  tags: prometheus
