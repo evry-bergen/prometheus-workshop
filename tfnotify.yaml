@@ -4,8 +4,8 @@ notifier:
   github:
     token: $GITHUB_TOKEN
     repository:
-      owner: "xbanken"
-      name: "cloud-setup"
+      owner: "evry-bergen"
+      name: "prometheus-workshop"
 terraform:
   fmt:
     template: |
