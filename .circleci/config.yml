@@ -72,7 +72,7 @@ apply_job: &apply_job
         name: terraform apply
         command: |
           source $BASH_ENV
-          terraform apply --auto-approve terraform.plan $TERRAFORM_DIR
+          terraform apply --auto-approve terraform.plan
 jobs:
   lint:
     <<: *default_config
