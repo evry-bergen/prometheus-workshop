@@ -69,7 +69,7 @@ tfnotify_install: &tfnotify_install
       rm -rf tfnotify_v0.2.0_linux_amd64*
 
 apply_job: &apply_job
-  <<: *default_config
+  <<: *terraform_config
   steps:
     - *restore_repo
     - *set_terraform_environment
@@ -82,8 +82,16 @@ apply_job: &apply_job
           source $BASH_ENV
           terraform apply --auto-approve terraform.plan
 jobs:
+  yamllint:
+    <<: *yamllint_config
+    steps:
+      - checkout
+      - run:
+          name: yamllint
+          command: yamllint *.y*ml **/*.y*ml
+
   lint:
-    <<: *default_config
+    <<: *terraform_config
     steps:
       - checkout
       - *set_terraform_environment
@@ -104,7 +112,7 @@ jobs:
       - *save_repo
 
   plan:
-    <<: *default_config
+    <<: *terraform_config
     steps:
       - *restore_repo
       - *set_terraform_environment
@@ -133,6 +141,7 @@ workflows:
   version: 2
   lint_plan_apply:
     jobs:
+      - yamllint
       - lint
       - plan:
           requires:
