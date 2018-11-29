@@ -1,0 +1,6 @@
+---
+- hosts: controller
+  roles:
+  - common
+  - grafana
+  - prometheus
