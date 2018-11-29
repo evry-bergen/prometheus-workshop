@@ -76,7 +76,7 @@ tfnotify_install: &tfnotify_install
       mv tfnotify_v0.2.0_linux_amd64/tfnotify /usr/local/bin
       rm -rf tfnotify_v0.2.0_linux_amd64*
 
-apply_job: &apply_job
+terraform_apply_job: &terraform_apply_job
   <<: *terraform_config
   steps:
     - *restore_repo
@@ -90,15 +90,15 @@ apply_job: &apply_job
           source $BASH_ENV
           terraform apply --auto-approve terraform.plan
 jobs:
-  yamllint:
+  yaml-lint:
     <<: *yamllint_config
     steps:
       - checkout
       - run:
-          name: yamllint
-          command: cd ansible; yamllint *.y*ml **/*.y*ml
+          name: yaml-lint
+          command: cd ansible; find . -name "*.y*ml" | xargs -r yamllint
 
-  ansiblelint:
+  ansible-lint:
     <<: *ansiblelint_config
     steps:
       - checkout
@@ -106,13 +106,13 @@ jobs:
           name: ansible-lint
           command: cd ansible; find . -name "*.y*ml" | xargs -r ansible-lint --force-color
 
-  lint:
+  terraform-lint:
     <<: *terraform_config
     steps:
       - checkout
       - *set_terraform_environment
       - run:
-          name: terraform fmt
+          name: terraform lint
           command: |
             source $BASH_ENV
             if [ $(terraform fmt $TERRAFORM_DIR | grep -v .terraform | tee fmt_result.txt | wc -l) -gt 0 ]; then
@@ -127,7 +127,7 @@ jobs:
             fi
       - *save_repo
 
-  plan:
+  terraform-plan:
     <<: *terraform_config
     steps:
       - *restore_repo
@@ -148,24 +148,25 @@ jobs:
           paths:
             - terraform.plan
 
-  apply:
-    <<: *apply_job
-  #apply-with-approval:
-  #  <<: *apply_job
+  terraform-apply:
+    <<: *terraform_apply_job
+  #terraform-apply-with-approval:
+  #  <<: *terraform_apply_job
 
 workflows:
   version: 2
   lint_plan_apply:
     jobs:
-      - yamllint
-      - lint
-      - plan:
+      - yaml-lint
+      - ansible-lint
+      - terraform-lint
+      - terraform-plan:
           requires:
-            - lint
+            - terraform-lint
       #- approve:
       #    type: approval
       #    requires:
-      #      - plan
+      #      - terraform-plan
       #    filters:
       #      branches:
       #        only: master
@@ -175,9 +176,9 @@ workflows:
       #    filters:
       #      branches:
       #        only: master
-      - apply:
+      - terraform-apply:
           requires:
-            - plan
+            - terraform-plan
           filters:
             branches:
               only: master
