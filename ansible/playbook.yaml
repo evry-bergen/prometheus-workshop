@@ -1,4 +1,17 @@
 ---
-- import_playbook: controller.yaml
-- import_playbook: webservers.yaml
-- import_playbook: dbservers.yaml
+- hosts: all
+  roles:
+  - { role: node_exporter }
+
+- hosts: controller
+  roles:
+  - { role: grafana }
+  - { role: prometheus }
+
+- hosts: webservers
+  roles:
+  - { role: goapp }
+
+- hosts: dbservers
+  roles:
+  - { role: postgres }
