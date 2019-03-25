@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
     "fmt"
+    "log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -22,5 +23,6 @@ func main() {
         opsProcessed.Inc()
         fmt.Fprintf(w, "Hello, you´ve requested: %s\n", r.URL.Path)
     })
-	http.ListenAndServe(":2112", nil)
+	log.Fatal(http.ListenAndServe(":2112", nil))
+
 }
