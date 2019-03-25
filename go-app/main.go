@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"time"
+    "fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -17,17 +17,10 @@ var (
 )
 
 func main() {
-	recordMetrics()
-
 	http.Handle("/metrics", promhttp.Handler())
+    http.HandleFunc("/home", func (w http.ResponseWriter, r *http.Request) {
+        opsProcessed.Inc()
+        fmt.Fprintf(w, "Hello, you´ve requested: %s\n", r.URL.Path)
+    })
 	http.ListenAndServe(":2112", nil)
-}
-
-func recordMetrics() {
-	go func() {
-		for {
-			opsProcessed.Inc()
-			time.Sleep(2 * time.Second)
-		}
-	}()
 }
