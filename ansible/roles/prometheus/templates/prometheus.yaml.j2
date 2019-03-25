@@ -14,3 +14,11 @@ scrape_configs:
 {% for host in groups['all'] %}
     - {{ hostvars[host].ansible_host }}:9100
 {% endfor %}
+
+- job_name: 'web-app'
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+{% for host in groups['webservers'] %}
+    - {{ hostvars[host].ansible_host }}:2112
+{% endfor %}
