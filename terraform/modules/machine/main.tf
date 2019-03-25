@@ -13,7 +13,7 @@ resource "azurerm_public_ip" "vm" {
   name                         = "${var.name}-public-ip"
   location                     = "${data.azurerm_resource_group.group.location}"
   resource_group_name          = "${data.azurerm_resource_group.group.name}"
-  public_ip_address_allocation = "dynamic"
+  allocation_method            = "Dynamic"
 
   tags {
     environment = "${var.environment}"
