@@ -19,7 +19,7 @@ var (
 
 func main() {
 	http.Handle("/metrics", promhttp.Handler())
-    http.HandleFunc("/home", func (w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/home/", func (w http.ResponseWriter, r *http.Request) {
         opsProcessed.Inc()
         fmt.Fprintf(w, "Hello, you´ve requested: %s\n", r.URL.Path)
     })
