@@ -38,6 +38,8 @@ ansible_config: &ansible_config
   docker:
     - image: *ansible_image
   working_directory: *working_directory
+  environment:
+    ANSIBLE_HOST_KEY_CHECKING: False
 
 repo_cache_key: &repo_cache_key
   v1-repo-{{ .Branch }}-{{ .Revision }}
@@ -122,6 +124,14 @@ jobs:
           name: ansible check
           command: cd ansible; ansible-playbook playbook.yaml --syntax-check
 
+  ansible-run:
+    <<: *ansible_config
+    steps:
+      - *restore_repo
+      - run:
+          name: ansible run
+          command: cd ansible; ansible-playbook playbook.yaml -b
+
   terraform-lint:
     <<: *terraform_config
     steps:
@@ -180,22 +190,15 @@ workflows:
       - terraform-plan:
           requires:
             - terraform-lint
-      #- approve:
-      #    type: approval
-      #    requires:
-      #      - terraform-plan
-      #    filters:
-      #      branches:
-      #        only: master
-      #- apply-with-approval:
-      #    requires:
-      #      - approve
-      #    filters:
-      #      branches:
-      #        only: master
       - terraform-apply:
           requires:
             - terraform-plan
           filters:
             branches:
               only: master
+      - ansible-run:
+          requires:
+            - yaml-lint
+            - ansible-lint
+            - ansible-check
+            - terraform-apply
