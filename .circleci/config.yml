@@ -14,6 +14,9 @@ yamllint_image: &yamllint_image
 ansiblelint_image: &ansiblelint_image
   yokogawa/ansible-lint:latest
 
+ansible_image: &ansible_image
+  williamyeh/ansible:debian9
+
 terraform_config: &terraform_config
   docker:
     - image: *terraform_image
@@ -29,6 +32,11 @@ yamllint_config: &yamllint_config
 ansiblelint_config: &ansiblelint_config
   docker:
     - image: *ansiblelint_image
+  working_directory: *working_directory
+
+ansible_config: &ansible_config
+  docker:
+    - image: *ansible_image
   working_directory: *working_directory
 
 repo_cache_key: &repo_cache_key
@@ -105,6 +113,14 @@ jobs:
       - run:
           name: ansible-lint
           command: cd ansible; find . -name "*.y*ml" | xargs -r ansible-lint --force-color
+
+  ansible-check:
+    <<: *ansible_config
+    steps:
+      - *restore_repo
+      - run:
+          name: ansible check
+          command: cd ansible; ansible-playbook playbook.yaml --syntax-check
 
   terraform-lint:
     <<: *terraform_config
