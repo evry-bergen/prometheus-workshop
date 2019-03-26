@@ -175,6 +175,7 @@ workflows:
     jobs:
       - yaml-lint
       - ansible-lint
+      - ansible-check
       - terraform-lint
       - terraform-plan:
           requires:
