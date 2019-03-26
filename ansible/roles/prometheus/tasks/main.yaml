@@ -71,18 +71,6 @@
   tags: prometheus
 
 - name: Copy consoles to /etc/prometheus
-  copy:
-    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles
-    dest: /etc/prometheus
-    group: prometheus
-    owner: prometheus
-    mode: preserve
-    remote_src: true
-  when: not prometheus_check.stat.exists
-  notify: prometheus restart
-  tags: prometheus
-
-- name: Copy consoles to /etc/prometheus
   synchronize:
     src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles
     dest: /etc/prometheus/consoles
