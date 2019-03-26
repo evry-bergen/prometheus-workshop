@@ -68,6 +68,36 @@
   when: not grafana_check.stat.exists
   tags: grafana
 
+- name: Copy grafana to /usr/share/grafana
+  synchronize:
+    src: /tmp/grafana-{{ grafana_version }}/
+    dest: /usr/share/grafana
+  delegate_to: "{{ inventory_hostname }}"
+  when: not grafana_check.stat.exists
+  notify: grafana restart
+  tags: grafana
+
+- name: Give grafana ownership of /usr/share/grafana
+  file:
+    dest: /usr/share/grafana
+    owner: grafana
+    group: grafana
+    recurse: yes
+
+- name: Give grafana ownership of /etc/grafana
+  file:
+    dest: /etc/grafana
+    owner: grafana
+    group: grafana
+    recurse: yes
+
+- name: Copy grafana.ini to /etc/grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+  notify: grafana restart
+  tags: grafana
+
 - name: Install Grafana in systemd
   template:
     src: grafana.service.j2

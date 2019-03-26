@@ -1,5 +1,6 @@
 [Unit]
 Description=Grafana
+Documentation=http://docs.grafana.org
 Wants=network-online.target
 After=network-online.target
 
@@ -7,7 +8,10 @@ After=network-online.target
 User=grafana
 Group=grafana
 Type=simple
-ExecStart=/usr/local/bin/grafana-server
+Restart=on-failure
+ExecStart=/usr/local/bin/grafana-server \
+    -config /etc/grafana/grafana.ini \
+    -homepath /usr/share/grafana
 
 [Install]
 WantedBy=multi-user.target
