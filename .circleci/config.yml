@@ -26,7 +26,7 @@ golang_dir: &golang_dir
 golang_config: &golang_config
   docker:
     - image: *golang_image
-  working_directory: *golang_dir
+  working_directory: *working_directory
 
 terraform_config: &terraform_config
   docker:
@@ -125,7 +125,7 @@ jobs:
       - checkout
       - run:
           name: build app
-          command: go build .
+          command: cd go-app; go build .
 
   ansible-lint:
     <<: *ansiblelint_config
