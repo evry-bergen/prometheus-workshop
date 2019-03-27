@@ -1,0 +1,16 @@
+vm-01 ansible_user=azureuser ansible_host=13.93.44.2
+vm-02 ansible_user=azureuser ansible_host=40.114.254.140
+vm-03 ansible_user=azureuser ansible_host=13.93.44.15
+
+[controller]
+vm-01
+
+[controlees]
+vm-02
+vm-03
+
+[webservers]
+vm-02
+
+[dbservers]
+vm-03

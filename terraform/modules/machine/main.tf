@@ -10,10 +10,10 @@ data "azurerm_subnet" "subnet" {
 
 # Create public IPs
 resource "azurerm_public_ip" "vm" {
-  name                         = "${var.name}-public-ip"
-  location                     = "${data.azurerm_resource_group.group.location}"
-  resource_group_name          = "${data.azurerm_resource_group.group.name}"
-  allocation_method            = "Dynamic"
+  name                = "${var.name}-public-ip"
+  location            = "${data.azurerm_resource_group.group.location}"
+  resource_group_name = "${data.azurerm_resource_group.group.name}"
+  allocation_method   = "Dynamic"
 
   tags {
     environment = "${var.environment}"
@@ -34,6 +34,42 @@ resource "azurerm_network_security_group" "vm" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Prometheus"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "9090"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "node_exporter"
+    priority                   = 1003
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "9100"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "grafana"
+    priority                   = 1004
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3000"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }

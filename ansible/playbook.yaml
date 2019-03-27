@@ -1,0 +1,17 @@
+---
+- hosts: all
+  roles:
+  - {role: node_exporter}
+
+- hosts: controller
+  roles:
+  - {role: grafana}
+  - {role: prometheus}
+
+- hosts: webservers
+  roles:
+  - {role: goapp}
+
+- hosts: dbservers
+  roles:
+  - {role: postgres}

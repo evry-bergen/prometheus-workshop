@@ -1,0 +1,51 @@
+---
+- name: create user for node_exporter
+  user:
+    name: node_exporter
+    create_home: false
+    shell: /bin/false
+  tags: node_exporter
+
+- name: Check if node_exporter is download
+  stat:
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+  register: node_exporter_check
+  tags: node_exporter
+
+- name: Download node_exporter and verify checksum (sha256)
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v\
+          {{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}\
+          .linux-amd64.tar.gz"
+    dest: /tmp/
+    checksum: "{{ node_exporter_checksum }}"
+  when: not node_exporter_check.stat.exists
+  tags: node_exporter
+
+- name: Unarchive node_exporter binary
+  unarchive:
+    src: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: true
+  when: not node_exporter_check.stat.exists
+  tags: node_exporter
+
+- name: Copy node_exporter to /usr/local/bin
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64\
+          /node_exporter"
+    dest: /usr/local/bin
+    group: node_exporter
+    owner: node_exporter
+    mode: preserve
+    remote_src: true
+  when: not node_exporter_check.stat.exists
+  notify: node_exporter restart
+  tags: node_exporter
+
+- name: Install node_exporter in systemd
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify: node_exporter restart
+  tags: node_exporter

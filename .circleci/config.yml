@@ -2,18 +2,44 @@ version: 2
 
 references:
 
-base_image: &base_image
-  hashicorp/terraform:light
-
 working_directory: &working_directory
   ~/terraform
 
-default_config: &default_config
+terraform_image: &terraform_image
+  hashicorp/terraform:light
+
+yamllint_image: &yamllint_image
+  sdesbure/yamllint:latest
+
+ansiblelint_image: &ansiblelint_image
+  yokogawa/ansible-lint:latest
+
+ansible_image: &ansible_image
+  williamyeh/ansible:debian9
+
+terraform_config: &terraform_config
   docker:
-    - image: *base_image
+    - image: *terraform_image
   working_directory: *working_directory
   environment:
     BASH_ENV: /root/.bashrc
+
+yamllint_config: &yamllint_config
+  docker:
+    - image: *yamllint_image
+  working_directory: *working_directory
+
+ansiblelint_config: &ansiblelint_config
+  docker:
+    - image: *ansiblelint_image
+  working_directory: *working_directory
+
+ansible_config: &ansible_config
+  docker:
+    - image: *ansible_image
+  working_directory: *working_directory
+  environment:
+    ANSIBLE_HOST_KEY_CHECKING: False
 
 repo_cache_key: &repo_cache_key
   v1-repo-{{ .Branch }}-{{ .Revision }}
@@ -60,8 +86,8 @@ tfnotify_install: &tfnotify_install
       mv tfnotify_v0.2.0_linux_amd64/tfnotify /usr/local/bin
       rm -rf tfnotify_v0.2.0_linux_amd64*
 
-apply_job: &apply_job
-  <<: *default_config
+terraform_apply_job: &terraform_apply_job
+  <<: *terraform_config
   steps:
     - *restore_repo
     - *set_terraform_environment
@@ -74,13 +100,45 @@ apply_job: &apply_job
           source $BASH_ENV
           terraform apply --auto-approve terraform.plan
 jobs:
-  lint:
-    <<: *default_config
+  yaml-lint:
+    <<: *yamllint_config
+    steps:
+      - checkout
+      - run:
+          name: yaml-lint
+          command: cd ansible; find . -name "*.y*ml" | xargs -r yamllint
+
+  ansible-lint:
+    <<: *ansiblelint_config
+    steps:
+      - checkout
+      - run:
+          name: ansible-lint
+          command: cd ansible; find . -name "*.y*ml" | xargs -r ansible-lint --force-color
+
+  ansible-check:
+    <<: *ansible_config
+    steps:
+      - checkout
+      - run:
+          name: ansible check
+          command: cd ansible; ansible-playbook playbook.yaml --syntax-check
+
+  ansible-run:
+    <<: *ansible_config
+    steps:
+      - *restore_repo
+      - run:
+          name: ansible run
+          command: cd ansible; ansible-playbook playbook.yaml -b
+
+  terraform-lint:
+    <<: *terraform_config
     steps:
       - checkout
       - *set_terraform_environment
       - run:
-          name: terraform fmt
+          name: terraform lint
           command: |
             source $BASH_ENV
             if [ $(terraform fmt $TERRAFORM_DIR | grep -v .terraform | tee fmt_result.txt | wc -l) -gt 0 ]; then
@@ -95,8 +153,8 @@ jobs:
             fi
       - *save_repo
 
-  plan:
-    <<: *default_config
+  terraform-plan:
+    <<: *terraform_config
     steps:
       - *restore_repo
       - *set_terraform_environment
@@ -116,35 +174,34 @@ jobs:
           paths:
             - terraform.plan
 
-  apply:
-    <<: *apply_job
-  #apply-with-approval:
-  #  <<: *apply_job
+  terraform-apply:
+    <<: *terraform_apply_job
+  #terraform-apply-with-approval:
+  #  <<: *terraform_apply_job
 
 workflows:
   version: 2
   lint_plan_apply:
     jobs:
-      - lint
-      - plan:
+      - yaml-lint
+      - ansible-lint
+      - ansible-check
+      - terraform-lint
+      - terraform-plan:
           requires:
-            - lint
-      #- approve:
-      #    type: approval
-      #    requires:
-      #      - plan
-      #    filters:
-      #      branches:
-      #        only: master
-      #- apply-with-approval:
-      #    requires:
-      #      - approve
-      #    filters:
-      #      branches:
-      #        only: master
-      - apply:
+            - terraform-lint
+      - terraform-apply:
           requires:
-            - plan
+            - terraform-plan
+          filters:
+            branches:
+              only: master
+      - ansible-run:
+          requires:
+            - yaml-lint
+            - ansible-lint
+            - ansible-check
+            - terraform-apply
           filters:
             branches:
               only: master

@@ -1,0 +1,106 @@
+---
+- name: Create Grafana user
+  user:
+    name: grafana
+    create_home: false
+    shell: /bin/false
+  tags: grafana
+
+- name: Create config directory
+  file:
+    path: /etc/grafana
+    state: directory
+    group: grafana
+    owner: grafana
+  tags: grafana
+
+- name: Create data directory
+  file:
+    path: /var/lib/grafana
+    state: directory
+    group: grafana
+    owner: grafana
+  tags: grafana
+
+- name: Check if Grafana is download
+  stat:
+    path: /tmp/grafana-{{ grafana_version }}.linux-amd64.tar.gz
+  register: grafana_check
+  tags: grafana
+
+- name: Download Grafana and verify checksum (sha256)
+  get_url:
+    url: "https://dl.grafana.com/oss/release/grafana-{{ grafana_version }}\
+          .linux-amd64.tar.gz"
+    dest: /tmp/
+    checksum: "{{ grafana_checksum }}"
+  when: not grafana_check.stat.exists
+  tags: grafana
+
+- name: Unarchive Grafana binary
+  unarchive:
+    src: /tmp/grafana-{{ grafana_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: true
+  when: not grafana_check.stat.exists
+  tags: grafana
+
+- name: Copy grafana-server to /usr/local/bin
+  copy:
+    src: /tmp/grafana-{{ grafana_version }}/bin/grafana-server
+    dest: /usr/local/bin
+    group: grafana
+    owner: grafana
+    mode: preserve
+    remote_src: true
+  when: not grafana_check.stat.exists
+  notify: grafana restart
+  tags: grafana
+
+- name: Copy grafana-cli to /usr/local/bin
+  copy:
+    src: /tmp/grafana-{{ grafana_version }}/bin/grafana-cli
+    dest: /usr/local/bin
+    group: grafana
+    owner: grafana
+    mode: preserve
+    remote_src: true
+  when: not grafana_check.stat.exists
+  tags: grafana
+
+- name: Copy grafana to /usr/share/grafana
+  synchronize:
+    src: /tmp/grafana-{{ grafana_version }}/
+    dest: /usr/share/grafana
+  delegate_to: "{{ inventory_hostname }}"
+  when: not grafana_check.stat.exists
+  notify: grafana restart
+  tags: grafana
+
+- name: Give grafana ownership of /usr/share/grafana
+  file:
+    dest: /usr/share/grafana
+    owner: grafana
+    group: grafana
+    recurse: yes
+
+- name: Give grafana ownership of /etc/grafana
+  file:
+    dest: /etc/grafana
+    owner: grafana
+    group: grafana
+    recurse: yes
+
+- name: Copy grafana.ini to /etc/grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+  notify: grafana restart
+  tags: grafana
+
+- name: Install Grafana in systemd
+  template:
+    src: grafana.service.j2
+    dest: /etc/systemd/system/grafana.service
+  notify: grafana restart
+  tags: grafana
