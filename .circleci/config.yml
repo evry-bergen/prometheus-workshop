@@ -119,7 +119,7 @@ jobs:
   ansible-check:
     <<: *ansible_config
     steps:
-      - *restore_repo
+      - checkout
       - run:
           name: ansible check
           command: cd ansible; ansible-playbook playbook.yaml --syntax-check
