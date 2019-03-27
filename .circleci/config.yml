@@ -125,7 +125,7 @@ jobs:
       - checkout
       - run:
           name: build app
-          command: cd go-app; go build .
+          command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...; go build .
 
   ansible-lint:
     <<: *ansiblelint_config
