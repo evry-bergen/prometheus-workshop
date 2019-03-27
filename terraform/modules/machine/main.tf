@@ -10,10 +10,10 @@ data "azurerm_subnet" "subnet" {
 
 # Create public IPs
 resource "azurerm_public_ip" "vm" {
-  name                         = "${var.name}-public-ip"
-  location                     = "${data.azurerm_resource_group.group.location}"
-  resource_group_name          = "${data.azurerm_resource_group.group.name}"
-  allocation_method            = "Dynamic"
+  name                = "${var.name}-public-ip"
+  location            = "${data.azurerm_resource_group.group.location}"
+  resource_group_name = "${data.azurerm_resource_group.group.name}"
+  allocation_method   = "Dynamic"
 
   tags {
     environment = "${var.environment}"
