@@ -17,6 +17,17 @@ ansiblelint_image: &ansiblelint_image
 ansible_image: &ansible_image
   williamyeh/ansible:debian9
 
+golang_image: &golang_image
+  circleci/golang:1.12.1
+
+golang_dir: &golang_dir
+  ~/go-app
+
+golang_config: &golang_config
+  docker:
+    - image: *golang_image
+  working_directory: *working_directory
+
 terraform_config: &terraform_config
   docker:
     - image: *terraform_image
@@ -108,6 +119,17 @@ jobs:
           name: yaml-lint
           command: cd ansible; find . -name "*.y*ml" | xargs -r yamllint
 
+  goapp-build:
+    <<: *golang_config
+    steps:
+      - checkout
+      - run:
+          name: build app
+          command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...
+      - persist_to_workspace:
+          root: .
+          paths: go-app/bin
+
   ansible-lint:
     <<: *ansiblelint_config
     steps:
@@ -128,6 +150,8 @@ jobs:
     <<: *ansible_config
     steps:
       - *restore_repo
+      - attach_workspace:
+          at: *working_directory
       - run:
           name: ansible run
           command: cd ansible; ansible-playbook playbook.yaml -b
@@ -184,6 +208,7 @@ workflows:
   lint_plan_apply:
     jobs:
       - yaml-lint
+      - goapp-build
       - ansible-lint
       - ansible-check
       - terraform-lint
@@ -199,6 +224,7 @@ workflows:
       - ansible-run:
           requires:
             - yaml-lint
+            - goapp-build
             - ansible-lint
             - ansible-check
             - terraform-apply

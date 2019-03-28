@@ -1,0 +1,15 @@
+[Unit]
+Description=GoApp
+Documentation=github.com/evry-bergen/prometheus-workshop
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=goapp
+Group=goapp
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/go-app
+
+[Install]
+WantedBy=multi-user.target
