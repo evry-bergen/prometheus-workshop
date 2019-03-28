@@ -15,3 +15,4 @@
 - hosts: dbservers
   roles:
   - {role: postgres}
+  - {role: postgres_exporter}

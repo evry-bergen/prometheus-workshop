@@ -1,0 +1,51 @@
+---
+- name: Check if postgres_exporter is download
+  stat:
+    path: /tmp/postgres_exporter_{{ postgres_exporter_version }}_linux-amd64.tar.gz
+  register: postgres_exporter_check
+  tags: postgres_exporter
+
+- name: Download postgres_exporter and verify checksum (sha256)
+  get_url:
+    url: "https://github.com/wrouesnel/postgres_exporter/releases/download/\
+          {{ postgres_exporter_version }}/postgres_exporter_{{ postgres_exporter_version }}\
+          _linux-amd64.tar.gz"
+    dest: /tmp/
+    checksum: "{{ postgres_exporter_checksum }}"
+  when: not postgres_exporter_check.stat.exists
+  tags: postgres_exporter
+
+- name: Unarchive postgres_exporter binary
+  unarchive:
+    src: /tmp/postgres_exporter_{{ postgres_exporter_version }}_linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: true
+  when: not postgres_exporter_check.stat.exists
+  tags: postgres_exporter
+
+- name: Copy postgres_exporter to /usr/local/bin
+  copy:
+    src: "/tmp/postgres_exporter_{{ postgres_exporter_version }}_linux-amd64\
+          /postgres_exporter"
+    dest: /usr/local/bin
+    group: postgres
+    owner: postgres
+    mode: preserve
+    remote_src: true
+  when: not postgres_exporter_check.stat.exists
+  notify: postgres_exporter restart
+  tags: postgres_exporter
+
+- name: Copy environment file for postgres_exporter
+  template:
+    src: postgres_exporter.env.j2
+    dest: /etc/default/postgres_exporter
+  notify: postgres_exporter restart
+  tags: postgres_exporter
+
+- name: Install postgres_exporter in systemd
+  template:
+    src: postgres_exporter.service.j2
+    dest: /etc/systemd/system/postgres_exporter.service
+  notify: postgres_exporter restart
+  tags: postgres_exporter

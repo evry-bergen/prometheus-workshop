@@ -1,0 +1,4 @@
+---
+postgres_exporter_version: v0.4.7
+postgres_exporter_checksum: "sha256:c34d61bb4deba8efae06fd3c9979b96dae3f3c75769\
+                             8ce3384c80fff586c667b"

@@ -15,6 +15,14 @@ scrape_configs:
     - {{ hostvars[host].ansible_host }}:9100
 {% endfor %}
 
+- job_name: 'postgres_exporter'
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+{% for host in groups['dbservers'] %}
+    - {{ hostvars[host].ansible_host }}:9187
+{% endfor %}
+
 - job_name: 'web-app'
   scrape_interval: 5s
   static_configs:
