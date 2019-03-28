@@ -126,9 +126,6 @@ jobs:
       - run:
           name: build app
           command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...
-      - run:
-          name: copy app to ansible
-          command: cp go-app/bin/go-app ansible/roles/goapp/files/
       - persist_to_workspace:
           root: .
           paths: go-app/bin/linux_amd64
