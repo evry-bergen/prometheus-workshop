@@ -125,13 +125,10 @@ jobs:
       - checkout
       - run:
           name: build app
-          command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...; CGO_ENABLED=0 GOOS=linux go install -a -installsuffix cgo
-      - run: ls; ls go-app; ls go-app/src/go-app
-      - run: ls go-app/bin; ls go-app/bin/linux_amd64
-      - run: pwd
+          command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...
       - persist_to_workspace:
           root: .
-          paths: go-app/bin/linux_amd64
+          paths: go-app/bin
 
   ansible-lint:
     <<: *ansiblelint_config

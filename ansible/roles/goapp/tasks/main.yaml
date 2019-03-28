@@ -8,7 +8,7 @@
 
 - name: Copy binary
   copy:
-    src: ./../go-app/bin/linux_amd64/go-app
+    src: ./../go-app/bin/go-app
     dest: /usr/local/bin/
     owner: goapp
     group: goapp
