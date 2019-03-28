@@ -1,15 +1,16 @@
 ---
 - name: Check if postgres_exporter is download
   stat:
-    path: /tmp/postgres_exporter_{{ postgres_exporter_version }}_linux-amd64.tar.gz
+    path: "/tmp/postgres_exporter_{{ postgres_exporter_version }}\
+          _linux-amd64.tar.gz"
   register: postgres_exporter_check
   tags: postgres_exporter
 
 - name: Download postgres_exporter and verify checksum (sha256)
   get_url:
     url: "https://github.com/wrouesnel/postgres_exporter/releases/download/\
-          {{ postgres_exporter_version }}/postgres_exporter_{{ postgres_exporter_version }}\
-          _linux-amd64.tar.gz"
+          {{ postgres_exporter_version }}/postgres_exporter_\
+          {{ postgres_exporter_version }}_linux-amd64.tar.gz"
     dest: /tmp/
     checksum: "{{ postgres_exporter_checksum }}"
   when: not postgres_exporter_check.stat.exists
@@ -17,7 +18,8 @@
 
 - name: Unarchive postgres_exporter binary
   unarchive:
-    src: /tmp/postgres_exporter_{{ postgres_exporter_version }}_linux-amd64.tar.gz
+    src: "/tmp/postgres_exporter_{{ postgres_exporter_version }}\
+          _linux-amd64.tar.gz"
     dest: /tmp/
     remote_src: true
   when: not postgres_exporter_check.stat.exists

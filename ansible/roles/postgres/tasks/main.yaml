@@ -1,8 +1,9 @@
+---
 - name: Install PostgreSQL
   apt:
     name: "{{ packages }}"
   vars:
     packages:
-    - postgresql
-    - postgresql-contrib
+      - postgresql
+      - postgresql-contrib
   tags: postgres

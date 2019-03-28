@@ -82,14 +82,14 @@
     dest: /usr/share/grafana
     owner: grafana
     group: grafana
-    recurse: yes
+    recurse: true
 
 - name: Give grafana ownership of /etc/grafana
   file:
     dest: /etc/grafana
     owner: grafana
     group: grafana
-    recurse: yes
+    recurse: true
 
 - name: Copy grafana.ini to /etc/grafana
   template:
