@@ -1,0 +1,6 @@
+---
+- name: goapp restart
+  systemd:
+    state: restarted
+    daemon_reload: true
+    name: goapp

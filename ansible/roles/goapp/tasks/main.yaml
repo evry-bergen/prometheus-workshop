@@ -1,0 +1,23 @@
+---
+- name: Create goapp user
+  user:
+    name: goapp
+    create_home: false
+    shell: /bin/false
+  tags: goapp
+
+- name: Copy binary
+  copy:
+    src: ./../go-app/bin/linux_amd64/go-app
+    dest: /usr/local/bin/
+    owner: goapp
+    group: goapp
+  notify: goapp restart
+  tags: goapp
+
+- name: Install goapp in systemd
+  template:
+    src: goapp.service.j2
+    dest: /etc/systemd/system/goapp.service
+  notify: goapp restart
+  tags: goapp
