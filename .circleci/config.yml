@@ -126,9 +126,10 @@ jobs:
       - run:
           name: build app
           command: cd go-app; export GOPATH=$GOPATH:$PWD; cd src/go-app/; go get ./...
+      - run: ls
       - persist_to_workspace:
           root: .
-          paths: go-app/bin/linux_amd64
+          paths: go-app/bin/linux_amd64/go-app
 
   ansible-lint:
     <<: *ansiblelint_config
